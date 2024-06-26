@@ -1,5 +1,6 @@
 import React, {ChangeEvent, CSSProperties, FC, useEffect, useState} from 'react';
 import {Handle, Node, NodeProps, Position, useNodeId, useReactFlow} from 'reactflow';
+import EditableComboBox from './EditableComboBox'; // Adjust the import path as needed
 
 const tableStyle: CSSProperties = {
     border: '1px solid black',
@@ -39,6 +40,13 @@ interface Cell {
     field: AttributeNames;
 }
 
+const databaseTypes = [
+    "CHAR(size)", "VARCHAR(size)", "BINARY(size)", "VARBINARY(size)", "TEXT(size)", "BLOB(size)",
+    "SERIAL", "BIT(size)", "BOOL", "INT(size)", "INTEGER(size)", "BIGINT(size)",
+    "DOUBLE()", "DOUBLE(size, d)", "DECIMAL(size, d)", "DATE", "DATETIME",
+    "TIMESTAMP", "TIME"
+];
+
 const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
     const [tableName, setTableName] = useState(data.tableName);
     const [tableNameEditing, setTableNameEditing] = useState<boolean>(false);
@@ -77,8 +85,8 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
         setTableNameInputValue(tableName);
     }
 
-    const handleAttributeChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setAttributesInputValue(e.target.value);
+    const handleAttributeChange = (value: string) => {
+        setAttributesInputValue(value);
     };
 
     const handleTableNameChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -89,6 +97,16 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
         if (e.key === 'Enter') {
             const newAttributes = [...attributes];
             newAttributes[index] = {...newAttributes[index], [field]: attributesInputValue};
+            setAttributes(newAttributes);
+            setAttributesEditing(null);
+        }
+    };
+
+    const handleAttributeTypeSave = () => {
+        if (attributesEditing) {
+            const { index, field } = attributesEditing;
+            const newAttributes = [...attributes];
+            newAttributes[index] = { ...newAttributes[index], [field]: attributesInputValue };
             setAttributes(newAttributes);
             setAttributesEditing(null);
         }
@@ -179,7 +197,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                             {attributesEditing?.index === index && attributesEditing.field === 'name' ? (
                                 <input
                                     value={attributesInputValue}
-                                    onChange={handleAttributeChange}
+                                    onChange={(e) => handleAttributeChange(e.target.value)}
                                     onKeyDown={(e) => handleAttributeKeyDown(e, index, 'name')}
                                     onBlur={handleAttributeBlur}
                                     autoFocus
@@ -188,26 +206,26 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                                 attr.name
                             )}
                         </td>
-                        <td
-                            style={{...tdStyle, borderLeft: "none"}}
-                            onDoubleClick={() => handleAttributeDoubleClick(index, 'type')}
-                        >
+                        <td style={{ ...tdStyle, borderLeft: "none" }}>
                             {attributesEditing?.index === index && attributesEditing.field === 'type' ? (
-                                <input
+                                <EditableComboBox
+                                    options={databaseTypes}
                                     value={attributesInputValue}
                                     onChange={handleAttributeChange}
-                                    onKeyDown={(e) => handleAttributeKeyDown(e, index, 'type')}
-                                    onBlur={handleAttributeBlur}
-                                    autoFocus
+                                    onSave={handleAttributeTypeSave}
+                                    onCancel={handleAttributeBlur}
                                 />
                             ) : (
-                                attr.type
+                                <div onDoubleClick={() => handleAttributeDoubleClick(index, 'type')}>
+                                    {attr.type}
+                                </div>
                             )}
                             {hoveredAttr[attr.id - 1] && <button
                                 onClick={() => handleRemoveRow(attr.id)}
                                 style={{
                                     position: 'absolute',
                                     right: -20,
+                                    top: 3,
                                     background: 'white',
                                     border: '1px solid black',
                                     borderRadius: '50%',
