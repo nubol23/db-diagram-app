@@ -34,7 +34,7 @@ const initialNodes: Node<TableNodeProps>[] = [
 const nodeTypes = {tableNode: TableNode};
 
 function Diagram() {
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+    const [nodes, , onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
     const onConnect = useCallback(
@@ -51,9 +51,9 @@ function Diagram() {
             onConnect={onConnect}
             nodeTypes={nodeTypes}
             fitView
-            style={{ width: '100vw', height: '100vh' }}
+            style={{width: '100vw', height: '100vh'}}
         >
-            <Background />
+            <Background/>
         </ReactFlow>
     );
 }

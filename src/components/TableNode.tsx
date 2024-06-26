@@ -1,5 +1,5 @@
-import React, { ChangeEvent, CSSProperties, FC, useState } from 'react';
-import { Handle, NodeProps, Position } from 'reactflow';
+import React, {ChangeEvent, CSSProperties, FC, useEffect, useState} from 'react';
+import {Handle, Node, NodeProps, Position, useNodeId, useReactFlow} from 'reactflow';
 
 const tableStyle: CSSProperties = {
     border: '1px solid black',
@@ -26,6 +26,7 @@ interface Attribute {
     name: string;
     type: string;
 }
+
 type AttributeNames = keyof Attribute;
 
 export interface TableNodeProps {
@@ -38,38 +39,79 @@ interface Cell {
     field: AttributeNames;
 }
 
-const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
-    const [editing, setEditing] = useState<Cell | null>(null);
+const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
+    const [tableName, setTableName] = useState(data.tableName);
+    const [tableNameEditing, setTableNameEditing] = useState<boolean>(false);
+    const [tableNameInputValue, setTableNameInputValue] = useState<string>("");
+
     const [attributes, setAttributes] = useState<Attribute[]>(data.attributes);
-    const [inputValue, setInputValue] = useState("");
+    const [attributesEditing, setAttributesEditing] = useState<Cell | null>(null);
+    const [attributesInputValue, setAttributesInputValue] = useState("");
+
     const [hovered, setHovered] = useState(false);
     const [hoveredAttr, setHoveredAttr] = useState(Array(data.attributes.length).fill(false));
 
-    const handleDoubleClick = (index: number, field: AttributeNames) => {
-        setEditing({ index, field });
-        setInputValue(attributes[index][field] as string);
+    const {setNodes} = useReactFlow();
+    const nodeId = useNodeId();
+
+    useEffect(() => {
+        // Reflect any updates in the attributes, up to the parent component
+        setNodes(
+            (
+                nodes: Node<TableNodeProps>[]
+            ) => nodes.map(
+                node => node.id === nodeId
+                    ? {...node, data: {...node.data, tableName, attributes}}
+                    : node
+            )
+        )
+    }, [tableName, nodeId, setNodes, attributes]);
+
+    const handleAttributeDoubleClick = (index: number, field: AttributeNames) => {
+        setAttributesEditing({index, field});
+        setAttributesInputValue(attributes[index][field] as string);
     };
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setInputValue(e.target.value);
+    const handleTableNameDoubleClick = () => {
+        setTableNameEditing(true);
+        setTableNameInputValue(tableName);
+    }
+
+    const handleAttributeChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setAttributesInputValue(e.target.value);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number, field: AttributeNames) => {
+    const handleTableNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setTableNameInputValue(e.target.value);
+    }
+
+    const handleAttributeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number, field: AttributeNames) => {
         if (e.key === 'Enter') {
             const newAttributes = [...attributes];
-            newAttributes[index] = { ...newAttributes[index], [field]: inputValue };
+            newAttributes[index] = {...newAttributes[index], [field]: attributesInputValue};
             setAttributes(newAttributes);
-            setEditing(null);
+            setAttributesEditing(null);
         }
     };
 
-    const handleBlur = () => {
-        setEditing(null);
+    const handleTableNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            setTableName(tableNameInputValue)
+            setTableNameEditing(false);
+        }
+    }
+
+    const handleAttributeBlur = () => {
+        setAttributesEditing(null);
     };
+
+    const handleTableNameBlur = () => {
+        setTableNameEditing(false);
+    }
 
     const handleAddRow = () => {
         const newId = attributes.length + 1;
-        setAttributes([...attributes, { id: newId, fieldType: null, name: '', type: '' }]);
+        setAttributes([...attributes, {id: newId, fieldType: null, name: '', type: ''}]);
     };
 
     const handleRemoveRow = (rowId: number) => {
@@ -80,24 +122,40 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
         <div
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
-            style={{ position: 'relative' }}
+            style={{position: 'relative'}}
         >
             <table style={tableStyle}>
                 <thead>
                 <tr>
-                    <th style={thStyle} colSpan={3}>{data.tableName}</th>
+                    <th
+                        style={thStyle}
+                        colSpan={3}
+                        onDoubleClick={handleTableNameDoubleClick}
+                    >
+                        {tableNameEditing ? (
+                            <input
+                                value={tableNameInputValue}
+                                onChange={handleTableNameChange}
+                                onKeyDown={(e) => handleTableNameKeyDown(e)}
+                                onBlur={handleTableNameBlur}
+                                autoFocus
+                            />
+                        ) : (
+                            tableName
+                        )}
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
                 {attributes.map((attr: Attribute, index: number) => (
                     <tr
                         key={attr.id}
-                        style={{ position: "relative" }}
+                        style={{position: "relative"}}
                         onMouseEnter={
                             () => setHoveredAttr(hoveredAttr.map((_val, i) => i === (attr.id - 1)))
                         }
                         onMouseLeave={
-                            () => setHoveredAttr(hoveredAttr.map((val, i) => i === attr.id-1? false: val))
+                            () => setHoveredAttr(hoveredAttr.map((val, i) => i === attr.id - 1 ? false : val))
                         }
                     >
                         <td style={tdStyle}>{
@@ -108,22 +166,22 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
                                         type={attr.fieldType === 'PK' ? "target" : "source"}
                                         position={Position.Left}
                                         id={`${attr.fieldType.toLowerCase()}-${index}`}
-                                        style={{ position: "absolute", top: "50%" }}
+                                        style={{position: "absolute", top: "50%"}}
                                     />
                                 }
                                 {attr.fieldType || ""}
                             </>
                         }</td>
                         <td
-                            style={{ ...tdStyle, borderRight: "none" }}
-                            onDoubleClick={() => handleDoubleClick(index, 'name')}
+                            style={{...tdStyle, borderRight: "none"}}
+                            onDoubleClick={() => handleAttributeDoubleClick(index, 'name')}
                         >
-                            {editing?.index === index && editing.field === 'name' ? (
+                            {attributesEditing?.index === index && attributesEditing.field === 'name' ? (
                                 <input
-                                    value={inputValue}
-                                    onChange={handleChange}
-                                    onKeyDown={(e) => handleKeyDown(e, index, 'name')}
-                                    onBlur={handleBlur}
+                                    value={attributesInputValue}
+                                    onChange={handleAttributeChange}
+                                    onKeyDown={(e) => handleAttributeKeyDown(e, index, 'name')}
+                                    onBlur={handleAttributeBlur}
                                     autoFocus
                                 />
                             ) : (
@@ -131,15 +189,15 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
                             )}
                         </td>
                         <td
-                            style={{ ...tdStyle, borderLeft: "none" }}
-                            onDoubleClick={() => handleDoubleClick(index, 'type')}
+                            style={{...tdStyle, borderLeft: "none"}}
+                            onDoubleClick={() => handleAttributeDoubleClick(index, 'type')}
                         >
-                            {editing?.index === index && editing.field === 'type' ? (
+                            {attributesEditing?.index === index && attributesEditing.field === 'type' ? (
                                 <input
-                                    value={inputValue}
-                                    onChange={handleChange}
-                                    onKeyDown={(e) => handleKeyDown(e, index, 'type')}
-                                    onBlur={handleBlur}
+                                    value={attributesInputValue}
+                                    onChange={handleAttributeChange}
+                                    onKeyDown={(e) => handleAttributeKeyDown(e, index, 'type')}
+                                    onBlur={handleAttributeBlur}
                                     autoFocus
                                 />
                             ) : (
