@@ -1,9 +1,9 @@
-import {addEdge, Background, ReactFlow, useEdgesState, useNodesState} from "reactflow";
+import {addEdge, Background, Connection, Edge, Node, ReactFlow, useEdgesState, useNodesState} from "reactflow";
 import "reactflow/dist/style.css";
-import { useCallback } from "react";
+import {useCallback} from "react";
 import TableNode, {TableNodeProps} from "../components/TableNode.tsx";
 
-const initialNodes: Array<TableNodeProps> = [
+const initialNodes: Node<TableNodeProps>[] = [
     {
         id: '1',
         type: 'tableNode',
@@ -15,12 +15,6 @@ const initialNodes: Array<TableNodeProps> = [
             ],
         },
         position: {x: 250, y: 0},
-        selected: false,
-        zIndex: 0,
-        isConnectable: false,
-        xPos: 0,
-        yPos: 0,
-        dragging: false
     },
     {
         id: '2',
@@ -34,23 +28,17 @@ const initialNodes: Array<TableNodeProps> = [
             ],
         },
         position: {x: 100, y: 100},
-        selected: false,
-        zIndex: 0,
-        isConnectable: false,
-        xPos: 0,
-        yPos: 0,
-        dragging: false
     },
 ];
 
-const nodeTypes = { tableNode: TableNode };
+const nodeTypes = {tableNode: TableNode};
 
 function Diagram() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
     const onConnect = useCallback(
-        (params) => setEdges((eds) => addEdge(params, eds)),
+        (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
         [setEdges],
     );
 

@@ -1,4 +1,4 @@
-import React, { ChangeEvent, CSSProperties, FC, useEffect, useState } from 'react';
+import React, { ChangeEvent, CSSProperties, FC, useState } from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 
 const tableStyle: CSSProperties = {
@@ -28,12 +28,9 @@ interface Attribute {
 }
 type AttributeNames = keyof Attribute;
 
-export interface TableNodeProps extends NodeProps {
-    data: {
-        tableName: string;
-        attributes: Attribute[];
-    };
-    position: { x: number; y: number };
+export interface TableNodeProps {
+    tableName: string;
+    attributes: Attribute[];
 }
 
 interface Cell {
@@ -41,11 +38,12 @@ interface Cell {
     field: AttributeNames;
 }
 
-const TableNode: FC<TableNodeProps> = ({ data }) => {
+const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
     const [editing, setEditing] = useState<Cell | null>(null);
     const [attributes, setAttributes] = useState<Attribute[]>(data.attributes);
     const [inputValue, setInputValue] = useState("");
     const [hovered, setHovered] = useState(false);
+    const [hoveredAttr, setHoveredAttr] = useState(Array(data.attributes.length).fill(false));
 
     const handleDoubleClick = (index: number, field: AttributeNames) => {
         setEditing({ index, field });
@@ -55,10 +53,6 @@ const TableNode: FC<TableNodeProps> = ({ data }) => {
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value);
     };
-
-    useEffect(() => {
-        console.log(data);
-    }, [data]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number, field: AttributeNames) => {
         if (e.key === 'Enter') {
@@ -78,6 +72,10 @@ const TableNode: FC<TableNodeProps> = ({ data }) => {
         setAttributes([...attributes, { id: newId, fieldType: null, name: '', type: '' }]);
     };
 
+    const handleRemoveRow = (rowId: number) => {
+        setAttributes(attributes.filter(attr => attr.id !== rowId));
+    }
+
     return (
         <div
             onMouseEnter={() => setHovered(true)}
@@ -92,7 +90,16 @@ const TableNode: FC<TableNodeProps> = ({ data }) => {
                 </thead>
                 <tbody>
                 {attributes.map((attr: Attribute, index: number) => (
-                    <tr key={attr.id} style={{ position: "relative" }}>
+                    <tr
+                        key={attr.id}
+                        style={{ position: "relative" }}
+                        onMouseEnter={
+                            () => setHoveredAttr(hoveredAttr.map((_val, i) => i === (attr.id - 1)))
+                        }
+                        onMouseLeave={
+                            () => setHoveredAttr(hoveredAttr.map((val, i) => i === attr.id-1? false: val))
+                        }
+                    >
                         <td style={tdStyle}>{
                             <>
                                 {
@@ -138,6 +145,21 @@ const TableNode: FC<TableNodeProps> = ({ data }) => {
                             ) : (
                                 attr.type
                             )}
+                            {hoveredAttr[attr.id - 1] && <button
+                                onClick={() => handleRemoveRow(attr.id)}
+                                style={{
+                                    position: 'absolute',
+                                    right: -20,
+                                    background: 'white',
+                                    border: '1px solid black',
+                                    borderRadius: '50%',
+                                    width: 24,
+                                    height: 24,
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                -
+                            </button>}
                         </td>
                     </tr>
                 ))}
