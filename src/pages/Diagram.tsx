@@ -12,8 +12,8 @@ const initialNodes: Node<TableNodeProps>[] = [
         data: {
             tableName: 'Teachers',
             attributes: [
-                {id: 1, fieldType: "PK", name: 'teacherID', type: 'int'},
-                {id: 2, fieldType: null, name: 'name', type: 'varchar'},
+                {id: 0, fieldType: "PK", name: 'teacherID', type: 'int'},
+                {id: 1, fieldType: null, name: 'name', type: 'varchar'},
             ],
         },
         position: {x: 250, y: 0},
@@ -24,9 +24,9 @@ const initialNodes: Node<TableNodeProps>[] = [
         data: {
             tableName: 'Classes',
             attributes: [
-                {id: 1, fieldType: "PK", name: 'classID', type: 'int'},
-                {id: 2, fieldType: null, name: 'courseCode', type: 'varchar'},
-                {id: 3, fieldType: "FK", name: "teacherID", type: "int"}
+                {id: 0, fieldType: "PK", name: 'classID', type: 'int'},
+                {id: 1, fieldType: null, name: 'courseCode', type: 'varchar'},
+                {id: 2, fieldType: "FK", name: "teacherID", type: "int"}
             ],
         },
         position: {x: 100, y: 100},

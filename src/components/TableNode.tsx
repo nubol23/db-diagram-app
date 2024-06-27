@@ -136,7 +136,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
     }
 
     const handleAddRow = () => {
-        const newId = attributes.length + 1;
+        const newId = attributes.length;
         setAttributes([...attributes, {id: newId, fieldType: null, name: '', type: ''}]);
     };
 
@@ -178,10 +178,10 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                         key={attr.id}
                         style={{position: "relative"}}
                         onMouseEnter={
-                            () => setHoveredAttr(hoveredAttr.map((_val, i) => i === (attr.id - 1)))
+                            () => setHoveredAttr(hoveredAttr.map((_val, i) => i === attr.id))
                         }
                         onMouseLeave={
-                            () => setHoveredAttr(hoveredAttr.map((val, i) => i === attr.id - 1 ? false : val))
+                            () => setHoveredAttr(hoveredAttr.map((val, i) => i === attr.id ? false : val))
                         }
                     >
                         <td style={tdStyle}>
@@ -249,7 +249,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                                     {attr.type}
                                 </div>
                             )}
-                            {hoveredAttr[attr.id - 1] && <button
+                            {hoveredAttr[attr.id] && <button
                                 onClick={() => handleRemoveRow(attr.id)}
                                 style={{
                                     position: 'absolute',
