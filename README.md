@@ -1,5 +1,7 @@
 # Database Schema Visualizer
 
+**This project is very basic to meet my needs to use it, feel free to fork it or propose changes to improve it as it is free for anyone to use it.**
+
 Database Schema Visualizer is a web-based tool for visualizing and editing database schemas. The tool allows users to create, modify, and connect tables using an intuitive drag-and-drop interface. The visualizer supports both one-to-one and many-to-one relationships between tables.
 
 ## Installation
