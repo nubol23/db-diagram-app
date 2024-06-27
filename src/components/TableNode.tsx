@@ -67,7 +67,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
     const [hovered, setHovered] = useState(false);
     const [hoveredAttr, setHoveredAttr] = useState(Array(data.attributes.length).fill(false));
 
-    const {setNodes} = useReactFlow();
+    const {setNodes, getEdges} = useReactFlow();
     const nodeId = useNodeId();
 
     useEffect(() => {
@@ -83,9 +83,39 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
         )
     }, [tableName, nodeId, setNodes, attributes]);
 
+
+    const edgeExists = (rowId: number) => {
+        const attribute = attributes[rowId];
+        const edges = getEdges();
+        let filteredEdges = [];
+
+        switch (attribute.fieldType) {
+            case "PK":
+                // Is target
+                filteredEdges = edges.filter(
+                    (edge) =>
+                        edge.target === nodeId && edge.targetHandle === `${attribute.fieldType?.toLowerCase()}-${rowId}`
+                )
+                return filteredEdges.length > 0
+            case "FK":
+                // Is source
+                filteredEdges = edges.filter(
+                    (edge) =>
+                        edge.source === nodeId && edge.sourceHandle === `${attribute.fieldType?.toLowerCase()}-${rowId}`
+                )
+                return filteredEdges.length > 0
+            default:
+                return false;
+        }
+    }
+
     const handleAttributeDoubleClick = (index: number, field: AttributeNames) => {
-        setAttributesEditing({index, field});
-        setAttributesInputValue(attributes[index][field] as string);
+        if (edgeExists(index)) {
+            alert("Cannot change attribute key, remove the relation first.")
+        } else {
+            setAttributesEditing({index, field});
+            setAttributesInputValue(attributes[index][field] as string);
+        }
     };
 
     const handleTableNameDoubleClick = () => {
@@ -141,7 +171,11 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
     };
 
     const handleRemoveRow = (rowId: number) => {
-        setAttributes(attributes.filter(attr => attr.id !== rowId));
+        if (edgeExists(rowId)) {
+            alert("Cannot delete an attribute with an existing relation, remove the relation first.")
+        } else {
+            setAttributes(attributes.filter(attr => attr.id !== rowId));
+        }
     }
 
     return (
