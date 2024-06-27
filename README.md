@@ -56,3 +56,7 @@ To set up the project locally, follow these steps:
 <p style="text-align: center;">
 <img src="/public/diagrams.gif" alt="diagram gif" width="70%" />
 </p>
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
