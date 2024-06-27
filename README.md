@@ -1,8 +1,14 @@
 # Database Schema Visualizer
 
-**This project is very basic to meet my needs to use it, feel free to fork it or propose changes to improve it as it is free for anyone to use it.**
-
 Database Schema Visualizer is a web-based tool for visualizing and editing database schemas. The tool allows users to create, modify, and connect tables using an intuitive drag-and-drop interface. The visualizer supports both one-to-one and many-to-one relationships between tables.
+
+## Why create this?
+
+You may ask why this app when there are a lot of other ones available to create database diagrams that export directly to SQL dialects, JSON and other formats.
+
+I needed a way to evaluate student's homework when covering these database diagrams in a class, to automate the process with other apps, I would need to make them use one of those, generate an intermediate format and paste the exported data into an evaluator to compare with the expected solution, so to avoid that, as this is a react component, you can embed it into any LMS written in react and integrate it so that student's don't need to worry about exporting and pasting, just click the export button and the app handles the API call or evaluation step automatically.
+
+This project is very basic to meet my specific needs but would like to extend it further and fix the problems that it may have and haven't cosidered yet. Feel free to propose changes to improve it as it is free for anyone to use it.
 
 ## Installation
 
