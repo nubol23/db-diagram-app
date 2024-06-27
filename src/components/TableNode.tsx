@@ -14,6 +14,7 @@ import {
   useReactFlow,
 } from "reactflow";
 import EditableComboBox from "./EditableComboBox";
+import { IoIosAdd, IoIosRemove } from "react-icons/io";
 
 const tableStyle: CSSProperties = {
   border: "1px solid black",
@@ -355,7 +356,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
                   </div>
                 )}
                 {hoveredAttrIds.has(attr.id) && (
-                  <button
+                  <IoIosRemove
                     onClick={() => handleRemoveRow(attr.id)}
                     style={{
                       position: "absolute",
@@ -368,9 +369,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
                       height: 24,
                       cursor: "pointer",
                     }}
-                  >
-                    -
-                  </button>
+                  />
                 )}
               </td>
             </tr>
@@ -378,7 +377,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
         </tbody>
       </table>
       {hovered && (
-        <button
+        <IoIosAdd
           onClick={handleAddRow}
           style={{
             position: "absolute",
@@ -392,9 +391,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
             height: 24,
             cursor: "pointer",
           }}
-        >
-          +
-        </button>
+        />
       )}
     </div>
   );

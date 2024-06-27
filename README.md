@@ -1,30 +1,58 @@
-# React + TypeScript + Vite
+# Database Schema Visualizer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Database Schema Visualizer is a web-based tool for visualizing and editing database schemas. The tool allows users to create, modify, and connect tables using an intuitive drag-and-drop interface. The visualizer supports both one-to-one and many-to-one relationships between tables.
 
-Currently, two official plugins are available:
+## Installation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+To set up the project locally, follow these steps:
 
-## Expanding the ESLint configuration
+1. **Clone the repository:**
+2. **Install dependencies:**
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+   Using npm:
 
-- Configure the top-level `parserOptions` property like this:
+   ```sh
+   npm install
+   ```
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+3. **Start the development server:**
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+   Using npm:
+
+   ```sh
+   npm run dev
+   ```
+
+4. **Open the application:**
+
+   Open your browser and navigate to `http://localhost:3000`.
+
+## Usage
+
+1. **Add a Table:**
+    - Click on the empty pane to add a new table.
+    - Double-click on the table name to edit it.
+
+2. **Add Attribute**
+    - Hover over the table to show the add button `+`.
+    - Click on it to add an empty row.
+
+3. **Remove Attribute**
+    - Hover over an attribute to show the remove button on the right `-`.
+    - Click on it to remove the attribute.
+
+4. **Edit Table Attributes:**
+    - Double-click on an attribute's key, name or type to edit it.
+    - Use the combo box to select the type of the attribute and edit it if is the type.
+
+5. **Define Relationships:**
+    - Drag and connect the handles to create relationships between tables.
+    - Double-click on an edge to switch between one-to-one and many-to-one relationships.
+
+6. **Export Diagram:** 
+    - Click on the export button (last one) in the controls to export the current state of the diagram to JSON format.
+
+## Preview
+<p style="text-align: center;">
+<img src="/public/diagrams.gif" alt="diagram gif" width="70%" />
+</p>
