@@ -93,24 +93,22 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
         const attribute = attributes.find(attr => attr.id === attributeId);
         if (!attribute) return false;
         const edges = getEdges();
-        let filteredEdges = [];
 
         switch (attribute.fieldType) {
             case "PK":
-                filteredEdges = edges.filter(
+                return edges.find(
                     (edge) =>
                         edge.target === nodeId && edge.targetHandle === `${attribute.fieldType?.toLowerCase()}-${attributeId}`
-                )
-                return filteredEdges.length > 0;
+                ) !== undefined;
             case "FK":
-                filteredEdges = edges.filter(
+                return edges.find(
                     (edge) =>
                         edge.source === nodeId && edge.sourceHandle === `${attribute.fieldType?.toLowerCase()}-${attributeId}`
-                )
-                return filteredEdges.length > 0;
+                ) !== undefined;
             default:
                 return false;
         }
+
     }
 
     const handleAttributeDoubleClick = (id: number, field: AttributeNames) => {
