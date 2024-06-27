@@ -5,7 +5,8 @@ import EditableComboBox from './EditableComboBox'; // Adjust the import path as 
 const tableStyle: CSSProperties = {
     border: '1px solid black',
     width: '100%',
-    borderCollapse: 'collapse'
+    borderCollapse: 'collapse',
+    background: "white",
 };
 
 const thStyle: CSSProperties = {

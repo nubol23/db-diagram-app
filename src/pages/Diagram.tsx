@@ -2,6 +2,7 @@ import {addEdge, Background, Connection, Edge, Node, ReactFlow, useEdgesState, u
 import "reactflow/dist/style.css";
 import {useCallback} from "react";
 import TableNode, {TableNodeProps} from "../components/TableNode.tsx";
+import ManyToOneEdge from "../components/ManyToOneEdge.tsx";
 
 const initialNodes: Node<TableNodeProps>[] = [
     {
@@ -32,13 +33,17 @@ const initialNodes: Node<TableNodeProps>[] = [
 ];
 
 const nodeTypes = {tableNode: TableNode};
+const edgeTypes = {manyToOne: ManyToOneEdge};
 
 function Diagram() {
     const [nodes, , onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
     const onConnect = useCallback(
-        (params: Connection | Edge) => setEdges((eds) => addEdge(params, eds)),
+        (connection: Connection | Edge) => {
+            const edge = {...connection, type: "manyToOne"};
+            setEdges((eds) => addEdge(edge, eds))
+        },
         [setEdges],
     );
 
@@ -50,6 +55,7 @@ function Diagram() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             fitView
             style={{width: '100vw', height: '100vh'}}
         >
