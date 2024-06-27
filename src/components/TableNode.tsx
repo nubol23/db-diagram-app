@@ -7,17 +7,23 @@ const tableStyle: CSSProperties = {
     width: '100%',
     borderCollapse: 'collapse',
     background: "white",
+    minWidth: "100px",
+    minHeight: "1em",
 };
 
 const thStyle: CSSProperties = {
     border: '1px solid black',
     padding: '4px',
     background: '#f2f2f2',
+    height: "100%",
+    minHeight: "0.85em",
 };
 
 const tdStyle: CSSProperties = {
     border: '1px solid black',
     padding: '6px',
+    height: "100%",
+    minHeight: "0.85em",
 };
 
 const cellDefaultStyle: CSSProperties = {
