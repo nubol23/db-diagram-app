@@ -19,6 +19,13 @@ const tdStyle: CSSProperties = {
     padding: '6px',
 };
 
+const cellDefaultStyle: CSSProperties = {
+    height: "100%",
+    width: "100%",
+    minHeight: "0.85em",
+    minWidth: "1em",
+}
+
 type fieldTypes = "PK" | "FK" | null;
 
 interface Attribute {
@@ -176,20 +183,33 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                             () => setHoveredAttr(hoveredAttr.map((val, i) => i === attr.id - 1 ? false : val))
                         }
                     >
-                        <td style={tdStyle}>{
-                            <>
-                                {
-                                    attr.fieldType &&
-                                    <Handle
-                                        type={attr.fieldType === 'PK' ? "target" : "source"}
-                                        position={Position.Left}
-                                        id={`${attr.fieldType.toLowerCase()}-${index}`}
-                                        style={{position: "absolute", top: "50%"}}
-                                    />
-                                }
-                                {attr.fieldType || ""}
-                            </>
-                        }</td>
+                        <td style={tdStyle}>
+                            {attributesEditing?.index === index && attributesEditing.field === 'fieldType' ? (
+                                <EditableComboBox
+                                    options={["PK", "FK", ""]}
+                                    value={attr.fieldType || ""}
+                                    onChange={handleAttributeChange}
+                                    onSave={handleAttributeTypeSave}
+                                    onCancel={handleAttributeBlur}
+                                    editable={false}
+                                />
+                            ) : (
+                                <div
+                                    onDoubleClick={() => handleAttributeDoubleClick(index, "fieldType")}
+                                    style={cellDefaultStyle}
+                                >
+                                    {attr.fieldType && (
+                                        <Handle
+                                            type={attr.fieldType === 'PK' ? "target" : "source"}
+                                            position={Position.Left}
+                                            id={`${attr.fieldType.toLowerCase()}-${index}`}
+                                            style={{ position: "absolute", top: "50%" }}
+                                        />
+                                    )}
+                                    {attr.fieldType || ""}
+                                </div>
+                            )}
+                        </td>
                         <td
                             style={{...tdStyle, borderRight: "none"}}
                             onDoubleClick={() => handleAttributeDoubleClick(index, 'name')}
@@ -203,7 +223,11 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                                     autoFocus
                                 />
                             ) : (
-                                attr.name
+                                <div
+                                    style={cellDefaultStyle}
+                                >
+                                    {attr.name}
+                                </div>
                             )}
                         </td>
                         <td style={{ ...tdStyle, borderLeft: "none" }}>
@@ -214,9 +238,13 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                                     onChange={handleAttributeChange}
                                     onSave={handleAttributeTypeSave}
                                     onCancel={handleAttributeBlur}
+                                    editable={true}
                                 />
                             ) : (
-                                <div onDoubleClick={() => handleAttributeDoubleClick(index, 'type')}>
+                                <div
+                                    onDoubleClick={() => handleAttributeDoubleClick(index, 'type')}
+                                    style={cellDefaultStyle}
+                                >
                                     {attr.type}
                                 </div>
                             )}

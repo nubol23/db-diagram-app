@@ -6,9 +6,10 @@ interface EditableComboBoxProps {
     onChange: (value: string) => void;
     onSave: () => void;
     onCancel: () => void;
+    editable: boolean;
 }
 
-const EditableComboBox: FC<EditableComboBoxProps> = ({ options, value, onChange, onSave, onCancel }) => {
+const EditableComboBox: FC<EditableComboBoxProps> = ({ options, value, onChange, onSave, onCancel, editable }) => {
     const [inputValue, setInputValue] = useState(value);
     const [filteredOptions, setFilteredOptions] = useState<string[]>([]);
     const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -28,13 +29,19 @@ const EditableComboBox: FC<EditableComboBoxProps> = ({ options, value, onChange,
     }, [onCancel]);
 
     useEffect(() => {
-        setFilteredOptions(options.filter(option => option.toLowerCase().startsWith(inputValue.toLowerCase())));
-    }, [inputValue, options]);
+        if (!editable) {
+            setFilteredOptions(options);
+        } else {
+            setFilteredOptions(options.filter(option => option.toLowerCase().startsWith(inputValue.toLowerCase())));
+        }
+    }, [inputValue, options, editable]);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setInputValue(e.target.value);
-        onChange(e.target.value);
-        setHighlightedIndex(-1); // Reset highlighted index when typing
+        if (editable) {
+            setInputValue(e.target.value);
+            onChange(e.target.value);
+            setHighlightedIndex(-1); // Reset highlighted index when typing
+        }
     };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -61,7 +68,8 @@ const EditableComboBox: FC<EditableComboBoxProps> = ({ options, value, onChange,
                 value={inputValue}
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
-                autoFocus
+                autoFocus={editable}
+                disabled={!editable}
             />
             {filteredOptions.length > 0 && (
                 <div style={{ position: 'absolute', top: '100%', left: 0, width: '100%', background: 'white', border: '1px solid black', zIndex: 1000 }}>
@@ -73,12 +81,14 @@ const EditableComboBox: FC<EditableComboBoxProps> = ({ options, value, onChange,
                                 onChange(option);
                                 inputRef.current?.focus();
                             }}
+                            onDoubleClick={() => onSave()}
                             onMouseEnter={() => setHighlightedIndex(index)}
                             onMouseLeave={() => setHighlightedIndex(-1)}
                             style={{
                                 padding: '4px',
                                 cursor: 'pointer',
-                                backgroundColor: highlightedIndex === index ? '#bde4ff' : 'transparent'
+                                backgroundColor: highlightedIndex === index ? '#bde4ff' : 'transparent',
+                                minHeight: "0.85em",
                             }}
                         >
                             {option}
