@@ -11,8 +11,7 @@ const ManyToOneEdge: FC<EdgeProps> = ({
                                           targetPosition,
                                           markerEnd,
                                       }) => {
-    const { setEdges} = useReactFlow();
-
+    const { setEdges } = useReactFlow();
     const pathRef = useRef<SVGPathElement>(null);
     const [adjustedSource, setAdjustedSource] = useState({ x: sourceX, y: sourceY });
 
@@ -37,8 +36,8 @@ const ManyToOneEdge: FC<EdgeProps> = ({
     const dx = adjustedSource.x - sourceX;
     const dy = adjustedSource.y - sourceY;
     const length = Math.sqrt(dx * dx + dy * dy);
-    const ux = dx / length;
-    const uy = dy / length;
+    const ux = length ? dx / length : 0;
+    const uy = length ? dy / length : 0;
 
     // Coordinates for the crow's foot
     const footSpread = 10; // Horizontal spread
@@ -49,11 +48,13 @@ const ManyToOneEdge: FC<EdgeProps> = ({
     const leg2X = sourceX + uy * footSpread - ux * legLength;
     const leg2Y = sourceY - ux * footSpread - uy * legLength;
 
+    const isValidCoordinate = (value: number) => !isNaN(value) && isFinite(value);
+
     const footPath = `
     M${adjustedSource.x},${adjustedSource.y}
-    L${leg1X},${leg1Y}
+    ${isValidCoordinate(leg1X) && isValidCoordinate(leg1Y) ? `L${leg1X},${leg1Y}` : ''}
     M${adjustedSource.x},${adjustedSource.y}
-    L${leg2X},${leg2Y}
+    ${isValidCoordinate(leg2X) && isValidCoordinate(leg2Y) ? `L${leg2X},${leg2Y}` : ''}
   `;
 
     return (
