@@ -90,6 +90,7 @@ const EditableComboBox: FC<EditableComboBoxProps> = ({
   return (
     <div style={{ position: "relative" }}>
       <input
+        name="combo-box-edit"
         ref={inputRef}
         value={inputValue}
         onChange={handleChange}

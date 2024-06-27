@@ -128,7 +128,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
             (edge) =>
               edge.target === nodeId &&
               edge.targetHandle ===
-                `${attribute.fieldType?.toLowerCase()}-${attributeId}`,
+                `${attribute.fieldType?.toLowerCase()}-${attribute.name}`,
           ) !== undefined
         );
       case "FK":
@@ -137,7 +137,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
             (edge) =>
               edge.source === nodeId &&
               edge.sourceHandle ===
-                `${attribute.fieldType?.toLowerCase()}-${attributeId}`,
+                `${attribute.fieldType?.toLowerCase()}-${attribute.name}`,
           ) !== undefined
         );
       default:
@@ -255,6 +255,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
             >
               {tableNameEditing ? (
                 <input
+                  name="table-name-edit"
                   value={tableNameInputValue}
                   onChange={handleTableNameChange}
                   onKeyDown={(e) => handleTableNameKeyDown(e)}
@@ -305,7 +306,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
                       <Handle
                         type={attr.fieldType === "PK" ? "target" : "source"}
                         position={Position.Left}
-                        id={`${attr.fieldType.toLowerCase()}-${attr.id}`}
+                        id={`${attr.fieldType.toLowerCase()}-${attr.name}`}
                         style={{ position: "absolute", top: "50%" }}
                       />
                     )}
@@ -322,6 +323,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({ data }) => {
                 {attributesEditing?.index === attr.id &&
                 attributesEditing.field === "name" ? (
                   <input
+                    name="name-edit"
                     value={attributesInputValue}
                     onChange={(e) => handleAttributeChange(e.target.value)}
                     onKeyDown={(e) =>
