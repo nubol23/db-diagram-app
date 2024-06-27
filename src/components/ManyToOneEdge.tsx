@@ -1,7 +1,7 @@
 import {FC, useEffect, useRef, useState} from 'react';
-import {EdgeProps, getSmoothStepPath} from 'reactflow';
+import {EdgeProps, getSmoothStepPath, useReactFlow} from 'reactflow';
 
-const CrowsFootEdge: FC<EdgeProps> = ({
+const ManyToOneEdge: FC<EdgeProps> = ({
                                           id,
                                           sourceX,
                                           sourceY,
@@ -11,6 +11,8 @@ const CrowsFootEdge: FC<EdgeProps> = ({
                                           targetPosition,
                                           markerEnd,
                                       }) => {
+    const { setEdges} = useReactFlow();
+
     const pathRef = useRef<SVGPathElement>(null);
     const [adjustedSource, setAdjustedSource] = useState({ x: sourceX, y: sourceY });
 
@@ -40,7 +42,7 @@ const CrowsFootEdge: FC<EdgeProps> = ({
 
     // Coordinates for the crow's foot
     const footSpread = 10; // Horizontal spread
-    const legLength = 5; // Length of the legs
+    const legLength = 5;
 
     const leg1X = sourceX - uy * footSpread - ux * legLength;
     const leg1Y = sourceY + ux * footSpread - uy * legLength;
@@ -57,6 +59,16 @@ const CrowsFootEdge: FC<EdgeProps> = ({
     return (
         <>
             <path
+                // Make the invisible path thicker for a larger clickable area
+                ref={pathRef}
+                id={id}
+                d={edgePath}
+                stroke="transparent"
+                fill="none"
+                strokeWidth={10}
+                onDoubleClick={() => setEdges((edges) => edges.map((edge) => edge.id === id? {...edge, type: "oneToOne"} : edge))}
+            />
+            <path
                 ref={pathRef}
                 id={id}
                 stroke="#000"
@@ -65,9 +77,9 @@ const CrowsFootEdge: FC<EdgeProps> = ({
                 d={edgePath}
                 markerEnd={markerEnd}
             />
-            <path d={footPath} stroke="#000" fill="none" strokeWidth={1} />
+            <path d={footPath} stroke="#000" fill="none" strokeWidth={1}/>
         </>
     );
 };
 
-export default CrowsFootEdge;
+export default ManyToOneEdge;

@@ -3,6 +3,7 @@ import "reactflow/dist/style.css";
 import {useCallback} from "react";
 import TableNode, {TableNodeProps} from "../components/TableNode.tsx";
 import ManyToOneEdge from "../components/ManyToOneEdge.tsx";
+import OneToOneEdge from "../components/OneToOneEdge.tsx";
 
 const initialNodes: Node<TableNodeProps>[] = [
     {
@@ -33,7 +34,7 @@ const initialNodes: Node<TableNodeProps>[] = [
 ];
 
 const nodeTypes = {tableNode: TableNode};
-const edgeTypes = {manyToOne: ManyToOneEdge};
+const edgeTypes = {manyToOne: ManyToOneEdge, oneToOne: OneToOneEdge};
 
 function Diagram() {
     const [nodes, , onNodesChange] = useNodesState(initialNodes);
