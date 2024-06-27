@@ -2,6 +2,8 @@ import {
     addEdge,
     Background,
     Connection,
+    ControlButton,
+    Controls,
     Edge,
     Node,
     ReactFlow,
@@ -10,10 +12,17 @@ import {
     useReactFlow
 } from "reactflow";
 import "reactflow/dist/style.css";
-import React, {useCallback, useState} from "react";
+import React, {FC, useCallback, useState} from "react";
 import TableNode, {TableNodeProps} from "../components/TableNode.tsx";
 import ManyToOneEdge from "../components/ManyToOneEdge.tsx";
 import OneToOneEdge from "../components/OneToOneEdge.tsx";
+import {FaFileExport} from "react-icons/fa";
+import {ComparableDiagram, DiagramState} from "../App.tsx";
+
+export interface DiagramProps {
+    handleDiagramState: (diagramState: ComparableDiagram) => void;
+    handleExportTrigger: (exportTrigger: boolean) => void;
+}
 
 const initialNodes: Node<TableNodeProps>[] = [
     {
@@ -46,7 +55,7 @@ const initialNodes: Node<TableNodeProps>[] = [
 const nodeTypes = {tableNode: TableNode};
 const edgeTypes = {manyToOne: ManyToOneEdge, oneToOne: OneToOneEdge};
 
-function Diagram() {
+const Diagram: FC<DiagramProps> = ({ handleDiagramState, handleExportTrigger }) => {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
@@ -79,6 +88,23 @@ function Diagram() {
         }
     }
 
+    const generateComparableDiagram = (diagramState: DiagramState): ComparableDiagram => {
+        const exportedNodes = diagramState.nodes.map(node => node.data);
+
+        const exportedEdges = diagramState.edges.map(edge => ({
+            sourceTableName: nodes.find(node => node.id === edge.source)?.data.tableName || "",
+            targetTableName: nodes.find(node => node.id === edge.target)?.data.tableName || "",
+            sourceHandle: edge.sourceHandle || "",
+            targetHandle: edge.targetHandle || "",
+            type: edge.type as "manyToOne" | "oneToOne",
+        }));
+
+        return {
+            nodes: exportedNodes,
+            edges: exportedEdges,
+        };
+    }
+
     return (
         <ReactFlow
             nodes={nodes}
@@ -95,6 +121,16 @@ function Diagram() {
             onEdgeUpdateEnd={() => setIsConnecting(false)}
         >
             <Background/>
+            <Controls>
+                <ControlButton onClick={
+                    () => {
+                        handleExportTrigger(true);
+                        handleDiagramState(generateComparableDiagram({nodes, edges}));
+                    }
+                }>
+                    <FaFileExport />
+                </ControlButton>
+            </Controls>
         </ReactFlow>
     );
 }
