@@ -1,6 +1,6 @@
 import React, {ChangeEvent, CSSProperties, FC, useEffect, useState} from 'react';
 import {Handle, Node, NodeProps, Position, useNodeId, useReactFlow} from 'reactflow';
-import EditableComboBox from './EditableComboBox'; // Adjust the import path as needed
+import EditableComboBox from './EditableComboBox';
 
 const tableStyle: CSSProperties = {
     border: '1px solid black',
@@ -71,7 +71,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
     const [attributesInputValue, setAttributesInputValue] = useState("");
 
     const [hovered, setHovered] = useState(false);
-    const [hoveredAttr, setHoveredAttr] = useState(Array(data.attributes.length).fill(false));
+    const [hoveredAttrIds, setHoveredAttrIds] = useState<Set<number>>(new Set());
 
     const {setNodes, getEdges} = useReactFlow();
     const nodeId = useNodeId();
@@ -89,38 +89,37 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
         )
     }, [tableName, nodeId, setNodes, attributes]);
 
-
-    const edgeExists = (rowId: number) => {
-        const attribute = attributes[rowId];
+    const edgeExists = (attributeId: number) => {
+        const attribute = attributes.find(attr => attr.id === attributeId);
+        if (!attribute) return false;
         const edges = getEdges();
         let filteredEdges = [];
 
         switch (attribute.fieldType) {
             case "PK":
-                // Is target
                 filteredEdges = edges.filter(
                     (edge) =>
-                        edge.target === nodeId && edge.targetHandle === `${attribute.fieldType?.toLowerCase()}-${rowId}`
+                        edge.target === nodeId && edge.targetHandle === `${attribute.fieldType?.toLowerCase()}-${attributeId}`
                 )
-                return filteredEdges.length > 0
+                return filteredEdges.length > 0;
             case "FK":
-                // Is source
                 filteredEdges = edges.filter(
                     (edge) =>
-                        edge.source === nodeId && edge.sourceHandle === `${attribute.fieldType?.toLowerCase()}-${rowId}`
+                        edge.source === nodeId && edge.sourceHandle === `${attribute.fieldType?.toLowerCase()}-${attributeId}`
                 )
-                return filteredEdges.length > 0
+                return filteredEdges.length > 0;
             default:
                 return false;
         }
     }
 
-    const handleAttributeDoubleClick = (index: number, field: AttributeNames) => {
-        if (edgeExists(index)) {
-            alert("Cannot change attribute key, remove the relation first.")
+    const handleAttributeDoubleClick = (id: number, field: AttributeNames) => {
+        if (edgeExists(id)) {
+            alert("Cannot change attribute key, remove the relation first.");
         } else {
-            setAttributesEditing({index, field});
-            setAttributesInputValue(attributes[index][field] as string);
+            setAttributesEditing({index: id, field});
+            const attribute = attributes.find(attr => attr.id === id);
+            if (attribute) setAttributesInputValue(attribute[field] as string);
         }
     };
 
@@ -137,12 +136,15 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
         setTableNameInputValue(e.target.value);
     }
 
-    const handleAttributeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number, field: AttributeNames) => {
+    const handleAttributeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, id: number, field: AttributeNames) => {
         if (e.key === 'Enter') {
             const newAttributes = [...attributes];
-            newAttributes[index] = {...newAttributes[index], [field]: attributesInputValue};
-            setAttributes(newAttributes);
-            setAttributesEditing(null);
+            const index = newAttributes.findIndex(attr => attr.id === id);
+            if (index !== -1) {
+                newAttributes[index] = {...newAttributes[index], [field]: attributesInputValue};
+                setAttributes(newAttributes);
+                setAttributesEditing(null);
+            }
         }
     };
 
@@ -150,9 +152,12 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
         if (attributesEditing) {
             const { index, field } = attributesEditing;
             const newAttributes = [...attributes];
-            newAttributes[index] = { ...newAttributes[index], [field]: attributesInputValue };
-            setAttributes(newAttributes);
-            setAttributesEditing(null);
+            const attrIndex = newAttributes.findIndex(attr => attr.id === index);
+            if (attrIndex !== -1) {
+                newAttributes[attrIndex] = { ...newAttributes[attrIndex], [field]: attributesInputValue };
+                setAttributes(newAttributes);
+                setAttributesEditing(null);
+            }
         }
     };
 
@@ -172,15 +177,15 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
     }
 
     const handleAddRow = () => {
-        const newId = attributes.length;
+        const newId = attributes.length > 0 ? Math.max(...attributes.map(attr => attr.id)) + 1 : 0;
         setAttributes([...attributes, {id: newId, fieldType: null, name: '', type: ''}]);
     };
 
-    const handleRemoveRow = (rowId: number) => {
-        if (edgeExists(rowId)) {
-            alert("Cannot delete an attribute with an existing relation, remove the relation first.")
+    const handleRemoveRow = (attributeId: number) => {
+        if (edgeExists(attributeId)) {
+            alert("Cannot delete an attribute with an existing relation, remove the relation first.");
         } else {
-            setAttributes(attributes.filter(attr => attr.id !== rowId));
+            setAttributes(attributes.filter(attr => attr.id !== attributeId));
         }
     }
 
@@ -213,19 +218,19 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                 </tr>
                 </thead>
                 <tbody>
-                {attributes.map((attr: Attribute, index: number) => (
+                {attributes.map((attr: Attribute) => (
                     <tr
                         key={attr.id}
                         style={{position: "relative"}}
-                        onMouseEnter={
-                            () => setHoveredAttr(hoveredAttr.map((_val, i) => i === attr.id))
-                        }
-                        onMouseLeave={
-                            () => setHoveredAttr(hoveredAttr.map((val, i) => i === attr.id ? false : val))
-                        }
+                        onMouseEnter={() => setHoveredAttrIds(prev => new Set(prev).add(attr.id))}
+                        onMouseLeave={() => setHoveredAttrIds(prev => {
+                            const newSet = new Set(prev);
+                            newSet.delete(attr.id);
+                            return newSet;
+                        })}
                     >
                         <td style={tdStyle}>
-                            {attributesEditing?.index === index && attributesEditing.field === 'fieldType' ? (
+                            {attributesEditing?.index === attr.id && attributesEditing.field === 'fieldType' ? (
                                 <EditableComboBox
                                     options={["PK", "FK", ""]}
                                     value={attr.fieldType || ""}
@@ -236,14 +241,14 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                                 />
                             ) : (
                                 <div
-                                    onDoubleClick={() => handleAttributeDoubleClick(index, "fieldType")}
+                                    onDoubleClick={() => handleAttributeDoubleClick(attr.id, "fieldType")}
                                     style={cellDefaultStyle}
                                 >
                                     {attr.fieldType && (
                                         <Handle
                                             type={attr.fieldType === 'PK' ? "target" : "source"}
                                             position={Position.Left}
-                                            id={`${attr.fieldType.toLowerCase()}-${index}`}
+                                            id={`${attr.fieldType.toLowerCase()}-${attr.id}`}
                                             style={{ position: "absolute", top: "50%" }}
                                         />
                                     )}
@@ -253,13 +258,13 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                         </td>
                         <td
                             style={{...tdStyle, borderRight: "none"}}
-                            onDoubleClick={() => handleAttributeDoubleClick(index, 'name')}
+                            onDoubleClick={() => handleAttributeDoubleClick(attr.id, 'name')}
                         >
-                            {attributesEditing?.index === index && attributesEditing.field === 'name' ? (
+                            {attributesEditing?.index === attr.id && attributesEditing.field === 'name' ? (
                                 <input
                                     value={attributesInputValue}
                                     onChange={(e) => handleAttributeChange(e.target.value)}
-                                    onKeyDown={(e) => handleAttributeKeyDown(e, index, 'name')}
+                                    onKeyDown={(e) => handleAttributeKeyDown(e, attr.id, 'name')}
                                     onBlur={handleAttributeBlur}
                                     autoFocus
                                 />
@@ -272,7 +277,7 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                             )}
                         </td>
                         <td style={{ ...tdStyle, borderLeft: "none" }}>
-                            {attributesEditing?.index === index && attributesEditing.field === 'type' ? (
+                            {attributesEditing?.index === attr.id && attributesEditing.field === 'type' ? (
                                 <EditableComboBox
                                     options={databaseTypes}
                                     value={attributesInputValue}
@@ -283,28 +288,30 @@ const TableNode: FC<NodeProps<TableNodeProps>> = ({data}) => {
                                 />
                             ) : (
                                 <div
-                                    onDoubleClick={() => handleAttributeDoubleClick(index, 'type')}
+                                    onDoubleClick={() => handleAttributeDoubleClick(attr.id, 'type')}
                                     style={cellDefaultStyle}
                                 >
                                     {attr.type}
                                 </div>
                             )}
-                            {hoveredAttr[attr.id] && <button
-                                onClick={() => handleRemoveRow(attr.id)}
-                                style={{
-                                    position: 'absolute',
-                                    right: -20,
-                                    top: 3,
-                                    background: 'white',
-                                    border: '1px solid black',
-                                    borderRadius: '50%',
-                                    width: 24,
-                                    height: 24,
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                -
-                            </button>}
+                            {hoveredAttrIds.has(attr.id) && (
+                                <button
+                                    onClick={() => handleRemoveRow(attr.id)}
+                                    style={{
+                                        position: 'absolute',
+                                        right: -20,
+                                        top: 3,
+                                        background: 'white',
+                                        border: '1px solid black',
+                                        borderRadius: '50%',
+                                        width: 24,
+                                        height: 24,
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    -
+                                </button>
+                            )}
                         </td>
                     </tr>
                 ))}
