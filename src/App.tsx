@@ -2,11 +2,22 @@ import React, { useEffect, useState } from "react";
 import "./App.css";
 import Diagram from "./pages/Diagram.tsx";
 import { Edge, Node, ReactFlowProvider } from "reactflow";
-import { TableNodeProps } from "./components/TableNode.tsx";
+import { fieldTypes, TableNodeProps } from "./components/TableNode.tsx";
 
 export interface DiagramState {
   nodes: Node<TableNodeProps>[];
   edges: Edge[];
+}
+
+interface ComparableAttribute {
+  fieldType: fieldTypes;
+  name: string;
+  type: string;
+}
+
+export interface ComparableTableNodeProps {
+  tableName: string;
+  attributes: ComparableAttribute[];
 }
 
 interface ComparableEdge {
@@ -18,7 +29,7 @@ interface ComparableEdge {
 }
 
 export interface ComparableDiagram {
-  nodes: TableNodeProps[];
+  nodes: ComparableTableNodeProps[];
   edges: ComparableEdge[];
 }
 

@@ -47,7 +47,7 @@ const cellDefaultStyle: CSSProperties = {
   minWidth: "1em",
 };
 
-type fieldTypes = "PK" | "FK" | null;
+export type fieldTypes = "PK" | "FK" | null;
 
 interface Attribute {
   id: number;

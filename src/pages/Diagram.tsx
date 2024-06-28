@@ -94,7 +94,11 @@ const Diagram: FC<DiagramProps> = ({
   const generateComparableDiagram = (
     diagramState: DiagramState,
   ): ComparableDiagram => {
-    const exportedNodes = diagramState.nodes.map((node) => node.data);
+    const exportedNodes = diagramState.nodes.map((node) => {
+      const { tableName, attributes } = node.data;
+      const newAttributes = attributes.map(({ id: _, ...rest }) => rest);
+      return { tableName, attributes: newAttributes };
+    });
 
     const exportedEdges = diagramState.edges.map((edge) => ({
       sourceTableName:
